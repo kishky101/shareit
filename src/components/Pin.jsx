@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { MdDownloadForOffline } from "react-icons/md";
@@ -12,7 +12,18 @@ import { fetchUser } from "../utils/fetchUser";
 const Pin = ({ pin: { postedBy, image, _id, destination, save } }) => {
   const navigate = useNavigate();
   const [postHovered, setPostHovered] = useState(false);
-  //const [savingPost, setSavingPost] = useState(false);
+  const [mobile, setMobile] = useState(false);
+
+  useEffect(() => {
+    const windowWidth = window.innerWidth;
+
+    if (windowWidth > 767) {
+      setMobile(false)
+    }else if(windowWidth < 768) {
+      setMobile(true)
+    }
+  }, [])
+
 
   const user = fetchUser();
 
@@ -49,6 +60,7 @@ const Pin = ({ pin: { postedBy, image, _id, destination, save } }) => {
                 window.location.reload();
             })
     }
+
   return (
     <div className="m-2 ">
       <div
@@ -65,7 +77,7 @@ const Pin = ({ pin: { postedBy, image, _id, destination, save } }) => {
 
         {postHovered && (
           <div
-            className="absolute top-0 w-full h-full flex flex-col justify-between p-1 pr-2 pt-2 pb-2 z-50"
+            className="absolute top-0 w-full h-full md:flex flex-col justify-between p-1 pr-2 pt-2 pb-2 z-50 hidden "
             style={{ height: "100%" }}
           >
             <div className="flex items-center justify-between">
@@ -105,6 +117,73 @@ const Pin = ({ pin: { postedBy, image, _id, destination, save } }) => {
                         href={destination}
                         target="_blank" 
                         rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-white flex items-center gap-2 text-black font-bold p-2 pl-4 pr-4 rounded-full opacity-70 hover:opacity-100 hover:shadow-md"
+                    >
+                        <BsFillArrowUpRightCircleFill />
+                        {destination.length > 20 ? destination.slice(8, 20) : destination.slice(8)}
+                    </a>
+                  )}
+
+                  {postedBy?._id === user.sub && (
+                    <button
+                        onClick={(e) => {
+                        e.stopPropagation();
+                        deletePin(_id);
+                        }}
+                        type="button"
+                        className="bg-white p-2 opacity-70 hover:opacity-100 font-bold text-dark font-bold text-dark text-base rounded-3xl hover:shadow-md outlined-none"
+
+                    >
+                        <AiTwotoneDelete />
+                    </button>
+                  )}
+            </div>
+          </div>
+        )}
+        {mobile && (
+          <div
+            className="absolute top-0 w-full h-full flex flex-col justify-between p-1 pr-2 pt-2 pb-2 z-50 md:hidden "
+            style={{ height: "100%" }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex gap-2">
+                <a
+                  href={`${image?.asset?.url}?dl=`}
+                  download
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white w-9 h-9 rounded-full flex justify-center items-center text-dark text-xl opacity-75 hover:opacity-100 hover:shadow-md outline-none"
+                >
+                  <MdDownloadForOffline />
+                </a>
+              </div>
+              {alreadySaved ? (
+                <button
+                  type="button"
+                  className="bg-red-500 opacity-70 hover:opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl hover:shadow-md outlined-none"
+                >
+                  {save?.length} Saved
+                </button>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    savePin(_id);
+                  }}
+                  type="button"
+                  className="bg-red-500 opacity-70 hover:opacity-100 text-white font-bold px-5 py-1 text-base rounded-3xl hover:shadow-md outlined-none"
+                >
+                  Save
+                </button>
+              )}
+            </div>
+            <div className="flex justify-between items-center gap-2 w-full">
+                  {destination && (
+                    <a
+                        href={destination}
+                        target="_blank" 
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
                         className="bg-white flex items-center gap-2 text-black font-bold p-2 pl-4 pr-4 rounded-full opacity-70 hover:opacity-100 hover:shadow-md"
                     >
                         <BsFillArrowUpRightCircleFill />
